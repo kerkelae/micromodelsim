@@ -5,7 +5,7 @@ import numpy as np
 import micromodelsim as mmsim
 
 
-def test_sim(): 
+def test_sim():
     bvecs = np.array([[0.283, 0.283, 0.917]])
     bvals = np.array([1])
     odf_sh = np.array(
@@ -61,7 +61,5 @@ def test_sim():
     fs = np.array([1])
     ads = np.array([1])
     rds = np.array([1])
-    signals = mmsim.compartment_model_simulation(
-        gradient, fs, ads, rds, odf_sh
-    )
+    signals = mmsim.compartment_model_simulation(gradient, fs, ads, rds, odf_sh)
     assert abs(signals[0] - np.exp(-1) < 1e-3)
