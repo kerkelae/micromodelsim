@@ -159,6 +159,8 @@ Simulation requires a `Gradient` object, compartment signal fractions and diffus
 """
 
 # %%
+gradient = mmsim.Gradient(bvals, bvecs, bten_shape="spherical")
+
 f = 0.8  # intra-neurite signal fraction
 d = 2  # diffusivity
 
@@ -172,6 +174,7 @@ plt.plot(signals)
 plt.show()
 
 # %% test multi-compartment simulation
+gradient = mmsim.Gradient(bvals, bvecs, bten_shape="spherical")
 f = np.array([0.8, 0.5])          # intra-neurite signal fraction
 d = np.array([1, 2])    # diffusivity
 

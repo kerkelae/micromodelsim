@@ -46,7 +46,7 @@ class Gradient(object):
         b-values in an array with shape (number of measurements,).
     bvecs : array_like
         b-vectors in an array with shape (number of measurements, 3).
-    bten_shape : {"linear", "planar"}, optional
+    bten_shape : {"linear", "planar", "spherical"}, optional
         b-tensor shape.
 
     Attributes
@@ -79,6 +79,10 @@ class Gradient(object):
             elif self.bten_shape == "planar":
                 self.btens[i] = (
                     R @ np.array([[0, 0, 0], [0, 1, 0], [0, 0, 1]]) / 2 @ R.T * bval
+                )
+            elif self.bten_shape == "spherical":
+                self.btens[i] = (
+                    R @ np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]) / 3 @ R.T * bval
                 )
         self.bs = np.unique(bvals)
         self.shell_idx_list = [np.where(self.bvals == b)[0] for b in self.bs]

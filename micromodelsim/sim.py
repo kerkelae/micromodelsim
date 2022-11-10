@@ -17,6 +17,7 @@ for l in range(0, l_max + 1, 2):
 sft = np.linalg.inv(isft.T @ isft) @ isft.T
 _rf_btens_lte = Gradient(np.ones(len(_vertices)), _vertices, "linear").btens
 _rf_btens_pte = Gradient(np.ones(len(_vertices)), _vertices, "planar").btens
+_rf_btens_ste = Gradient(np.ones(len(_vertices)), _vertices, "spherical").btens
 
 
 def compartment_model_simulation(gradient, fs, ads, rds, odf_sh):
@@ -62,12 +63,24 @@ def compartment_model_simulation(gradient, fs, ads, rds, odf_sh):
                 fs[:, np.newaxis]
                 * np.exp(
                     -np.sum(
-                        gradient.bs[i] * _rf_btens_lte[np.newaxis] * Ds[:, np.newaxis],
+                        gradient.bs[i] * _rf_btens_pte[np.newaxis] * Ds[:, np.newaxis],
                         axis=(2, 3),
                     )
                 ),
                 axis=0,
             )
+        elif gradient.bten_shape == "spherical":
+                response = np.sum(
+                fs[:, np.newaxis]
+                * np.exp(
+                    -np.sum(
+                        gradient.bs[i] * _rf_btens_ste[np.newaxis] * Ds[:, np.newaxis],
+                        axis=(2, 3),
+                    )
+                ),
+                axis=0,
+            )
+        print(response)
         response_sh = sft @ response
         convolution_sh = np.sqrt(4 * np.pi / (2 * ls + 1)) * odf_sh * response_sh[l0s]
         signals[idx] = gradient._bvecs_isft_list[i] @ convolution_sh
@@ -114,15 +127,25 @@ def multi_compartment_model_simulation(gradient, fs, ads, rds, odf_sh):
             )
         elif gradient.bten_shape == "planar":
             response = np.sum(
-                fs[:, np.newaxis]
+                fs[:, :, np.newaxis]
                 * np.exp(
-                    -np.sum(
-                        gradient.bs[i] * _rf_btens_lte[np.newaxis, np.newaxis] * Ds[:, :, np.newaxis],
-                        axis=(3, 4),
-                    )
-                ),
-                axis=1,
+                    -np.sum(gradient.bs[i] * _rf_btens_pte[np.newaxis, np.newaxis] * Ds[:, :, np.newaxis],
+                            axis=(3, 4),
+                            )
+                        ),
+                    axis=1,
             )
+        elif gradient.bten_shape == "spherical":
+            response = np.sum(
+                fs[:, :, np.newaxis]
+                * np.exp(
+                    -np.sum(gradient.bs[i] * _rf_btens_ste[np.newaxis, np.newaxis] * Ds[:, :, np.newaxis],
+                            axis=(3, 4),
+                            )
+                        ),
+                    axis=1,
+            )
+        
         response_sh = (sft[np.newaxis] @ response[:,:,np.newaxis])[...,0]
         convolution_sh = np.sqrt(4 * np.pi / (2 * ls + 1)) * odf_sh[np.newaxis] * response_sh[:, l0s]
         signals[:, idx] = (gradient._bvecs_isft_list[i] @ convolution_sh[:, :, np.newaxis])[...,0]
