@@ -66,6 +66,18 @@ class Gradient(object):
     """
 
     def __init__(self, bvals, bvecs, bten_shape="linear"):
+
+        if not isinstance(bvals, np.ndarray):
+            raise TypeError(f"Incorrect value ({bvals}) for bvals")
+        if not isinstance(bvecs, np.ndarray):
+            raise TypeError(f"Incorrect value ({bvecs}) for bvals")
+        if len(bvals) == len(bvecs):
+            raise ValueError("bvals and bvecs should be the same length.")
+        if len(bvecs.shape(1)) != 3: 
+            raise TypeError(f"Incorrect dimension ({bvecs}) for bvecs. Expect bvecs.shape(0)=3.")
+        if bvecs.ndim != 2: 
+            raise TypeError(f"Incorrect dimension ({bvecs}) of bvecs. bvecs should have ndim =2.")
+
         self.bvals = bvals
         self.bvecs = bvecs
         self.bten_shape = bten_shape
