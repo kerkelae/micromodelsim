@@ -74,6 +74,61 @@ def compartment_model_simulation(gradient, fs, ads, rds, odf_sh):
     return signals
 
 
+def multi_compartment_model_simulation(gradient, fs, ads, rds, odf_sh):
+    """Generate simulated signals.
+
+    Parameters
+    ----------
+    gradient : micromodelsim.grad.Gradient
+        Object containing gradient information.
+    fs : array_like
+        Compartment signal fractions, [# simulations, # compartments].
+    ads : array_like
+        Axial diffusivities, [# simulations, # compartments].
+    rds : array_like
+        Radial diffusivities, [# simulations, # compartments]..
+    odf_sh : array_like
+        Spherical harmonic coefficients of the ODF.
+
+    Returns
+    -------
+    signals : numpy.ndarray
+    """
+    n_compartments = fs.shape[0]
+    n_simulations = fs.shape[1]
+    Ds = np.zeros((n_simulations, n_compartments, 3, 3))
+    Ds[:, :, 2, 2] = ads
+    Ds[:, :, 1, 1] = rds
+    Ds[:, :, 0, 0] = rds
+    signals = np.zeros((n_simulations, len(gradient.bvals)))
+    for i, idx in enumerate(gradient.shell_idx_list):
+        if gradient.bten_shape == "linear":
+            response = np.sum(
+                fs[:, :, np.newaxis]
+                * np.exp(
+                    -np.sum(gradient.bs[i] * _rf_btens_lte[np.newaxis, np.newaxis] * Ds[:, :, np.newaxis],
+                            axis=(3, 4),
+                            )
+                        ),
+                    axis=1,
+            )
+        elif gradient.bten_shape == "planar":
+            response = np.sum(
+                fs[:, np.newaxis]
+                * np.exp(
+                    -np.sum(
+                        gradient.bs[i] * _rf_btens_lte[np.newaxis, np.newaxis] * Ds[:, :, np.newaxis],
+                        axis=(3, 4),
+                    )
+                ),
+                axis=1,
+            )
+        response_sh = (sft[np.newaxis] @ response[:,:,np.newaxis])[...,0]
+        convolution_sh = np.sqrt(4 * np.pi / (2 * ls + 1)) * odf_sh[np.newaxis] * response_sh[:, l0s]
+        signals[:, idx] = (gradient._bvecs_isft_list[i] @ convolution_sh[:, :, np.newaxis])[...,0]
+    return signals
+
+
 def add_noise(signals, SNR):
     r"""Add Rician noise to signals.
 
