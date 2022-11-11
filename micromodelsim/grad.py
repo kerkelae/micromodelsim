@@ -81,9 +81,7 @@ class Gradient(object):
                     R @ np.array([[0, 0, 0], [0, 1, 0], [0, 0, 1]]) / 2 @ R.T * bval
                 )
             elif self.bten_shape == "spherical":
-                self.btens[i] = (
-                    R @ np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]) / 3 @ R.T * bval
-                )
+                self.btens[i] = bval * np.eye(3) / 3
         self.bs = np.unique(bvals)
         self.shell_idx_list = [np.where(self.bvals == b)[0] for b in self.bs]
         self._bvecs_isft_list = []
