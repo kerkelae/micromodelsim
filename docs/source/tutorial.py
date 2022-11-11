@@ -234,7 +234,7 @@ Ds[:, 2, 2] = ads
 Ds[:, 1, 1] = rds
 Ds[:, 0, 0] = rds
     
-signals = mmsim.dtd_simulation(gradient, Ds, P = np.array([1, 1]))
+signals = mmsim.dtd_simulation(gradient, Ds, P = np.array([1, 0]))
 plt.plot(signals)
 plt.show()
 
