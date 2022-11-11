@@ -1,4 +1,9 @@
-import numpy as np
+try: 
+    import JAX.numpy as np
+except ImportError:
+    print("Unable to import JAX, numpy is imported instead")
+    import numpy as np
+
 
 from .sh import sh, l_max, n_coeffs
 
@@ -67,16 +72,12 @@ class Gradient(object):
 
     def __init__(self, bvals, bvecs, bten_shape="linear"):
 
-        if not isinstance(bvals, np.ndarray):
-            raise TypeError(f"Incorrect value ({bvals}) for bvals")
-        if not isinstance(bvecs, np.ndarray):
-            raise TypeError(f"Incorrect value ({bvecs}) for bvals")
-        if len(bvals) == len(bvecs):
-            raise ValueError("bvals and bvecs should be the same length.")
-        if len(bvecs.shape(1)) != 3: 
-            raise TypeError(f"Incorrect dimension ({bvecs}) for bvecs. Expect bvecs.shape(0)=3.")
-        if bvecs.ndim != 2: 
-            raise TypeError(f"Incorrect dimension ({bvecs}) of bvecs. bvecs should have ndim =2.")
+        if bvals.ndim != 1:
+            raise ValueError("Incorrect value for `bvals`")
+        if bvecs.ndim != 2 or bvecs.shape[1] != 3:
+            raise ValueError(f"Incorrect value for `bvecs`")
+        if len(bvals) != len(bvecs):
+            raise ValueError("`bvals` and `bvecs` should be the same length.")
 
         self.bvals = bvals
         self.bvecs = bvecs
