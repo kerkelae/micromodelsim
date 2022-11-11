@@ -152,6 +152,37 @@ def multi_compartment_model_simulation(gradient, fs, ads, rds, odf_sh):
     return signals
 
 
+def dtd_simulation(gradient, dtd, P = None):
+    """Generate simulated signals.
+
+    Parameters
+    ----------
+    gradient : micromodelsim.grad.Gradient
+        Object containing gradient information.
+    dtd : array_like
+        Diffusion tensor distribution, [# compartments, 3, 3].
+    P : array_like
+        Weight of each tensor in distribution. If 'None' then tensors are evenly weighted
+
+    Returns
+    -------
+    signals : numpy.ndarray
+    
+    Notes
+    -----
+    Signals are generated using:
+    
+    .. math:: S = S_0 \int P(\mathbf{D}_\mu) \exp(-\mathbf{b:D})\,d\mathbf{D}_\mu
+    
+    """
+    if P is None:
+        P = np.ones(dtd.shape[0]) / dtd.shape[0]
+    
+    signals = np.sum(P[:, np.newaxis]*np.exp(-np.sum(gradient.btens[np.newaxis]*dtd[:,np.newaxis], axis=(2, 3))), axis=0)
+    
+    return signals
+
+    
 def add_noise(signals, SNR):
     r"""Add Rician noise to signals.
 
