@@ -169,12 +169,12 @@ Simulation requires a `Gradient` object, compartment signal fractions and diffus
 """
 
 # %%
+f = 0.8         # intra-neurite signal fraction
+d = 1           # diffusivity
+
 gradient_lte = mmsim.Gradient(bvals, bvecs, bten_shape="linear")
 gradient_pte = mmsim.Gradient(bvals, bvecs, bten_shape="planar")
 gradient_ste = mmsim.Gradient(bvals, bvecs, bten_shape="spherical")
-
-f = 0.8     # intra-neurite signal fraction
-d = 2       # diffusivity
 
 fs = np.array([f, 1 - f])
 ads = np.array([d, d])
@@ -190,22 +190,20 @@ plt.plot(signals_ste)
 plt.legend(['LTE','PTE','STE'])
 plt.show()
 
-
-
 # %%
 """
 #### Simulate multiple 2-compartment environments and generate the signal.
 """
 
 # %% 
-gradient = mmsim.Gradient(bvals, bvecs, bten_shape="linear")
+gradient = mmsim.Gradient(bvals, bvecs, bten_shape="spherical")
 f = np.array([0.8, 0.5])        # intra-neurite signal fraction
 d = np.array([1, 2])            # diffusivity
 
 fs = np.array([[f[i], 1-f[i]] for i in range(len(f))])
 ads = np.array([[d[i], d[i]] for i in range(len(f))])
 rds = np.array([[0, (1 - f[i]) * d[i]] for i in range(len(f))])
-signals = mmsim.multi_compartment_model_simulation(gradient, fs, ads, rds, odf_sh)
+signals = mmsim.compartment_model_simulation(gradient, fs, ads, rds, odf_sh)
 
 for i in range(len(f)):
     plt.plot(signals[i,:])
@@ -219,25 +217,20 @@ plt.show()
 Simulate a 2-compartment model using the DTD model.
 """
 
-# %% 
-
+# %%
+bvecs = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 1]])
+bvals = np.ones(len(bvecs))
 gradient = mmsim.Gradient(bvals, bvecs, bten_shape="linear")
 f = 0.8     # intra-neurite signal fraction
 d = 2       # diffusivity
-
-fs = np.array([f, 1 - f])
-ads = np.array([d/3, d])
-rds = np.array([d/3, (1 - f) * d])
-
-Ds = np.zeros((n_compartments, 3, 3))
-Ds[:, 2, 2] = ads
-Ds[:, 1, 1] = rds
-Ds[:, 0, 0] = rds
-    
-signals = mmsim.dtd_simulation(gradient, Ds, P = np.array([1, 0]))
+Ds = np.zeros((3, 3, 3))
+Ds[0, :, :] = d/3*np.eye(3)
+Ds[1, 0, 0] = d
+Ds[2, 1, 1] = d
+signals = mmsim.dtd_simulation(gradient, Ds, P = np.array([0, 0, 1]))
 plt.plot(signals)
 plt.show()
-
+  
 # %%
 """
 ## Validation
