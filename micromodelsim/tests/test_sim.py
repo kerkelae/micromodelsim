@@ -4,7 +4,6 @@ import numpy as np
 
 import micromodelsim as mmsim
 
-
 def test_sim(): 
     bvecs = np.array([[0.283, 0.283, 0.917]])
     bvals = np.array([1])
@@ -58,10 +57,8 @@ def test_sim():
         ]
     )
     gradient = mmsim.Gradient(bvals, bvecs)
-    fs = np.array([1])
-    ads = np.array([1])
-    rds = np.array([1])
-    signals = mmsim.compartment_model_simulation(
-        gradient, fs, ads, rds, odf_sh
-    )
-    assert abs(signals[0] - np.exp(-1) < 1e-3)
+    fs = np.array([[1]])
+    ads = np.array([[1]])
+    rds = np.array([[1]])
+    signals = mmsim.compartment_model_simulation(gradient, fs, ads, rds, odf_sh)[0]
+    assert abs(signals[0] - np.exp(-1)) < 1e-3
